@@ -1,59 +1,140 @@
 import 'package:app_wisata/detail_screen.dart';
 import 'package:app_wisata/model/tourism_place.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 class Mainscreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Wisata Bandung'),
+        title:
+            Text('Wisata Bandung. Size: ${MediaQuery.of(context).size.width}'),
       ),
-      body: ListView.builder(
-        itemBuilder: (context, index) {
-          final TourismPlace place = tourismPlaceList[index];
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          if (constraints.maxWidth <= 600) {
+            return TourismPlaceList();
+          } else if (constraints.maxWidth <= 1200) {
+            return TourismPlaceGrid(gridCount: 4);
+          } else {
+            return TourismPlaceGrid(gridCount: 6);
+          }
+        },
+      ),
+    );
+  }
+}
+
+//Widget ListView
+class TourismPlaceList extends StatefulWidget {
+  const TourismPlaceList({super.key});
+
+  @override
+  State<TourismPlaceList> createState() => _TourismPlaceListState();
+}
+
+class _TourismPlaceListState extends State<TourismPlaceList> {
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemBuilder: (context, index) {
+        final TourismPlace place = tourismPlaceList[index];
+        return InkWell(
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) {
+              return DetailScreen(
+                place: place,
+              );
+            }));
+          },
+          child: Card(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Image.asset(place.imageAsset),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          place.name,
+                          style: const TextStyle(fontSize: 16.0),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Text(place.location),
+                      ],
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+        );
+      },
+      itemCount: tourismPlaceList.length,
+    );
+  }
+}
+
+class TourismPlaceGrid extends StatelessWidget {
+  final int gridCount;
+
+  const TourismPlaceGrid({Key? key, required this.gridCount}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(24.0),
+      child: GridView.count(
+        crossAxisCount: gridCount,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        children: tourismPlaceList.map((place) {
           return InkWell(
             onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) {
-                return DetailScreen(
-                  place: place,
-                );
+                return DetailScreen(place: place);
               }));
             },
             child: Card(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
-                    flex: 1,
-                    child: Image.asset(place.imageAsset),
+                    child: Image.asset(
+                      place.imageAsset,
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                  Expanded(
-                    flex: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            place.name,
-                            style: const TextStyle(fontSize: 16.0),
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          Text(place.location),
-                        ],
+                  const SizedBox(height: 8.0),
+                  Padding(
+                    padding: EdgeInsets.only(left: 8.0),
+                    child: Text(
+                      place.name,
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  )
+                  ),
+                  Padding(
+                      padding: const EdgeInsets.only(left: 8.0, bottom: 8.0),
+                      child: Text(place.location))
                 ],
               ),
             ),
           );
-        },
-        itemCount: tourismPlaceList.length,
+        }).toList(),
       ),
     );
   }
